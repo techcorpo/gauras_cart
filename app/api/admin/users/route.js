@@ -6,7 +6,7 @@ export async function GET(req) {
     requireRole(req, 'admin');
     const status = new URL(req.url).searchParams.get('status') || 'pending';
     const r = await query(
-      `SELECT u.id,u.role,u.full_name,u.phone,u.email,u.status,u.created_at,
+      `SELECT u.id,u.role,u.full_name,u.phone,u.email,u.status,u.created_at,u.allow_merchant_buying,
               o.name AS org_name, o.registration_number, o.chairperson_name,
               b.name AS block_name, d.name AS district_name
        FROM users u

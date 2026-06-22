@@ -88,6 +88,9 @@ export default function ManufacturerProducts() {
               <Inp label={t('Category')} v={edit.category} on={v=>setEdit({...edit,category:v})} />
               <Inp label={t('Base Price (₹)')} type="number" v={edit.base_price} on={v=>setEdit({...edit,base_price:v})} />
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Inp label={t('Min Order Qty')} type="number" v={edit.min_order_qty} on={v=>setEdit({...edit,min_order_qty:v})} />
+            </div>
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!edit.is_active} onChange={e=>setEdit({...edit,is_active:e.target.checked})} /> {t('Active (visible to distributors)')}</label>
           </div>
         </Modal>

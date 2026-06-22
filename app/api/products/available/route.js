@@ -8,7 +8,7 @@ export async function GET(req) {
     const u = requireRole(req, 'distributor');
     const orgId = await getOrgId(u.id);
     const r = await query(`SELECT p.id,p.sku,p.name,p.category,p.unit,p.base_price,
-      COALESCE(dp.price,p.base_price) AS your_price, o.id AS manufacturer_id, o.name AS manufacturer_name,
+      COALESCE(dp.price,p.base_price) AS your_price, COALESCE(dp.min_qty,0) AS min_qty, p.min_order_qty, o.id AS manufacturer_id, o.name AS manufacturer_name,
       p.catalog_product_id, pc.canonical_name AS catalog_name
       FROM distributor_manufacturer dm
       JOIN products p ON p.manufacturer_id=dm.manufacturer_id AND p.is_active=true

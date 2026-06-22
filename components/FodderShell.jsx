@@ -42,7 +42,7 @@ export default function FodderShell({ role, search, onSearch, category, onCatego
     farmer: [['Shop','/farmer/shop'],['My Orders','/farmer/dashboard'],['Settings','/farmer/settings']],
     manufacturer: [['Dashboard','/manufacturer/dashboard'],['Products','/manufacturer/products'],['Orders','/manufacturer/orders'],['Settings','/manufacturer/settings']],
     distributor: [['Dashboard','/distributor/dashboard'],['Products','/distributor/products'],['Orders','/distributor/orders'],['Settings','/distributor/settings']],
-    admin: [['Dashboard','/admin/dashboard'],['Catalog','/admin/catalog']],
+    admin: [['Dashboard','/admin/dashboard'],['Manufacturers','/admin/manufacturers'],['Distributors','/admin/distributors'],['Farmers','/admin/farmers'],['Catalog','/admin/catalog'],['Earnings','/admin/earnings']],
   }[user.role] || [];
 
   return (

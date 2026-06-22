@@ -10,12 +10,13 @@ export async function PUT(req, { params }) {
     const r = await query(`UPDATE products SET
       sku=COALESCE($1,sku), name=COALESCE($2,name), category=$3, description=$4,
       unit=COALESCE($5,unit), base_price=COALESCE($6,base_price),
-      is_active=COALESCE($7,is_active), catalog_product_id=$8
-      WHERE id=$9 AND manufacturer_id=$10
-      RETURNING id,sku,name,category,description,unit,base_price,is_active,created_at,catalog_product_id`,
+      is_active=COALESCE($7,is_active), catalog_product_id=$8,
+      min_order_qty=COALESCE($9,min_order_qty)
+      WHERE id=$10 AND manufacturer_id=$11
+      RETURNING id,sku,name,category,description,unit,base_price,min_order_qty,is_active,created_at,catalog_product_id`,
       [b.sku||null,b.name||null,b.category||null,b.description||null,b.unit||null,
        b.base_price!=null?Number(b.base_price):null, typeof b.is_active==='boolean'?b.is_active:null,
-       b.catalog_product_id||null, params.id, orgId]);
+       b.catalog_product_id||null, b.min_order_qty!=null?Number(b.min_order_qty):null, params.id, orgId]);
     if (r.rowCount===0) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     return NextResponse.json({ message: 'Product updated', product: r.rows[0] });
   } catch (e) {

@@ -1,11 +1,11 @@
 'use client';
 import { useEffect, useState, useMemo } from 'react';
-import { Filter, Star, ShoppingCart, ChevronRight, AlertTriangle, Truck } from 'lucide-react';
+import { Filter, Star, ShoppingCart, ChevronRight, AlertTriangle, Truck, Factory } from 'lucide-react';
 import FodderShell from '../../../components/FodderShell';
 import { useCart } from '../../../components/CartProvider';
 import { useToast } from '../../../components/Toast';
 import { useUI } from '../../../components/Providers';
-import { Orders } from '../../../lib/api';
+import { Orders, Geo, Auth } from '../../../lib/api';
 import { productEmoji, productGradient } from '../../../lib/placeholder';
 
 export default function FarmerShop() {
@@ -16,38 +16,57 @@ export default function FarmerShop() {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [category, setCategory] = useState('all');
-  const [distributor, setDistributor] = useState('all');
+  const [seller, setSeller] = useState('all');
   const [sort, setSort] = useState('name');
+  const [districts, setDistricts] = useState([]);
+  const [districtId, setDistrictId] = useState('');
+  const [allowDirect, setAllowDirect] = useState(false);
 
+  // Load districts + the farmer's own district as default.
   useEffect(() => {
     (async () => {
-      try { setAll((await Orders.farmerShop()).products); }
-      catch (e) { toast(e.message); } finally { setLoading(false); }
+      try {
+        const [{ districts }, { user }] = await Promise.all([Geo.districts(), Auth.me()]);
+        setDistricts(districts || []);
+        if (user?.district_id) setDistrictId(String(user.district_id));
+      } catch (e) { /* fall through */ }
     })();
   }, []);
 
+  // Load products for the chosen district (re-runs when district changes).
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const r = await Orders.farmerShop(districtId || undefined);
+        setAll(r.products); setAllowDirect(!!r.allow_merchant_buying);
+      } catch (e) { toast(e.message); } finally { setLoading(false); }
+    })();
+  }, [districtId]);
+
   const categories = useMemo(() => [...new Set(all.map(p => p.category).filter(Boolean))].sort(), [all]);
-  const distributors = useMemo(() => {
-    const m = {}; all.forEach(p => { if (p.distributor_id) m[p.distributor_id] = p.distributor_name; });
+  const sellers = useMemo(() => {
+    const m = {}; all.forEach(p => { if (p.seller_id) m[p.seller_id] = p.seller_name; });
     return Object.entries(m);
   }, [all]);
 
   const list = useMemo(() => {
     let r = all.filter(p => {
       if (category !== 'all' && p.category !== category) return false;
-      if (distributor !== 'all' && String(p.distributor_id) !== distributor) return false;
+      if (seller !== 'all' && String(p.seller_id) !== seller) return false;
       if (q) {
-        const hay = [p.name, p.catalog_name, p.category, p.manufacturer_name, p.distributor_name].filter(Boolean).join(' ').toLowerCase();
+        const hay = [p.name, p.catalog_name, p.category, p.manufacturer_name, p.seller_name].filter(Boolean).join(' ').toLowerCase();
         if (!hay.includes(q.toLowerCase())) return false;
       }
       return true;
     });
+    const price = (x) => Number(x.price ?? x.base_price);
     r = [...r].sort((a, b) =>
-      sort === 'price-asc' ? a.base_price - b.base_price :
-      sort === 'price-desc' ? b.base_price - a.base_price :
+      sort === 'price-asc' ? price(a) - price(b) :
+      sort === 'price-desc' ? price(b) - price(a) :
       a.name.localeCompare(b.name));
     return r;
-  }, [all, q, category, distributor, sort]);
+  }, [all, q, category, seller, sort]);
 
   return (
     <FodderShell role="farmer" search={q} onSearch={setQ} category={category} onCategory={setCategory}>
@@ -56,7 +75,15 @@ export default function FarmerShop() {
         <aside className="lg:col-span-1 card p-5 h-fit space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#24332b]">
             <h3 className="font-black text-sm flex items-center gap-2"><Filter className="w-4 h-4 text-brand" /> {t('FILTERS')}</h3>
-            <button onClick={()=>{setCategory('all');setDistributor('all');setQ('');}} className="text-xs text-brand font-bold hover:underline">{t('Clear')}</button>
+            <button onClick={()=>{setCategory('all');setSeller('all');setQ('');}} className="text-xs text-brand font-bold hover:underline">{t('Clear')}</button>
+          </div>
+
+          <div>
+            <h4 className="font-bold text-xs text-slate-500 uppercase tracking-wider mb-2">{t('District')}</h4>
+            <select value={districtId} onChange={(e)=>{setDistrictId(e.target.value); setSeller('all');}} className="input h-10 text-xs">
+              <option value="">{t('Select District')}</option>
+              {districts.map(d => <option key={d.id} value={String(d.id)}>{d.name}</option>)}
+            </select>
           </div>
 
           <div>
@@ -68,10 +95,10 @@ export default function FarmerShop() {
           </div>
 
           <div>
-            <h4 className="font-bold text-xs text-slate-500 uppercase tracking-wider mb-2">{t('Distributor')}</h4>
+            <h4 className="font-bold text-xs text-slate-500 uppercase tracking-wider mb-2">{t('Seller')}</h4>
             <div className="space-y-1.5">
-              <FilterBtn active={distributor==='all'} onClick={()=>setDistributor('all')} label={t('All Distributors')} />
-              {distributors.map(([id,name]) => <FilterBtn key={id} active={distributor===String(id)} onClick={()=>setDistributor(String(id))} label={name} />)}
+              <FilterBtn active={seller==='all'} onClick={()=>setSeller('all')} label={t('All Sellers')} />
+              {sellers.map(([id,name]) => <FilterBtn key={id} active={seller===String(id)} onClick={()=>setSeller(String(id))} label={name} />)}
             </div>
           </div>
 
@@ -84,11 +111,12 @@ export default function FarmerShop() {
             </select>
           </div>
 
-          <div className="bg-gradient-to-br from-brand-deep to-brand p-4 rounded-xl text-white text-xs space-y-1">
-            <span className="bg-amber-400 text-amber-950 font-black px-2 py-0.5 rounded text-[9px] uppercase">{t('Gauras Assured')}</span>
-            <p className="font-bold text-sm">{t('Quality Guarantee')}</p>
-            <p className="text-white/80">{t('Order genuine inputs from verified manufacturers via your local distributors.')}</p>
-          </div>
+          {allowDirect && (
+            <div className="text-[11px] space-y-1.5">
+              <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" /> {t('via Distributor')}</div>
+              <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-500 inline-block" /> {t('Direct from Manufacturer')}</div>
+            </div>
+          )}
         </aside>
 
         {/* Product grid */}
@@ -122,10 +150,14 @@ export default function FarmerShop() {
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
               {list.map(p => {
                 const [c1, c2] = productGradient(p.name);
+                const direct = p.source === 'manufacturer';
                 return (
-                  <div key={p.distributor_id + '_' + p.id} className="card overflow-hidden flex flex-col group">
+                  <div key={p.source + '_' + p.seller_id + '_' + p.id} className={`card overflow-hidden flex flex-col group border-t-4 ${direct ? 'border-t-blue-500' : 'border-t-emerald-500'}`}>
                     <div className="relative h-40 grid place-items-center text-6xl" style={{ background:`linear-gradient(135deg,${c1},${c2})` }}>
                       {productEmoji(p.category)}
+                      <span className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full ${direct ? 'bg-blue-600' : 'bg-emerald-600'}`}>
+                        {direct ? t('Direct from Manufacturer') : t('via Distributor')}
+                      </span>
                       {p.catalog_name && <span className="absolute bottom-2 right-2 bg-slate-900/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">{p.catalog_name}</span>}
                     </div>
                     <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
@@ -135,19 +167,18 @@ export default function FarmerShop() {
                           <span className="capitalize">{p.category || '-'}</span>
                         </div>
                         <h3 className="font-bold text-sm line-clamp-2 min-h-[40px] leading-tight">{p.name}</h3>
-                        <div className="flex items-center gap-1 text-amber-400">
-                          {[...Array(5)].map((_, i) => <Star key={i} className={`w-3.5 h-3.5 ${i<4?'fill-current':''}`} />)}
-                          <span className="text-[10px] text-slate-400 ml-1">{t('In stock')}</span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 flex items-center gap-1"><Truck className="w-3 h-3 text-brand" /> {p.distributor_name}</p>
+                        {Number(p.min_order_qty) > 1 && <p className="text-[10px] text-amber-600 font-semibold">{t('Min order')}: {Number(p.min_order_qty)} {p.unit}</p>}
+                        <p className="text-[11px] text-slate-500 flex items-center gap-1">
+                          {direct ? <Factory className="w-3 h-3 text-blue-500" /> : <Truck className="w-3 h-3 text-brand" />} {p.seller_name}
+                        </p>
                       </div>
                       <div className="space-y-2 pt-3 border-t border-slate-100 dark:border-[#24332b]">
                         <div className="flex items-baseline justify-between">
-                          <span className="text-2xl font-black">₹{Number(p.base_price).toFixed(2)}</span>
+                          <span className="text-2xl font-black">₹{Number(p.price ?? p.base_price).toFixed(2)}</span>
                           <span className="text-[10px] text-brand font-bold bg-brand-light dark:bg-[#1c2a22] px-2 py-0.5 rounded">{t('Free Delivery')}</span>
                         </div>
                         <p className="text-[10px] text-slate-400">{t('By')} <span className="font-bold text-slate-600 dark:text-slate-300">{p.manufacturer_name}</span></p>
-                        <button onClick={()=>{cart.add(p); toast(t('Added to cart'));}}
+                        <button onClick={()=>{cart.add({ ...p, base_price: p.price ?? p.base_price }, Number(p.min_order_qty) || 1); toast(t('Added to cart'));}}
                           className="w-full bg-amber-400 hover:bg-amber-500 text-slate-950 font-black text-xs py-2 rounded-xl flex items-center justify-center gap-1.5">
                           <ShoppingCart className="w-3.5 h-3.5" /> {t('Add to Cart')}
                         </button>

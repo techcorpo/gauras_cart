@@ -36,7 +36,7 @@ export function CartProvider({ children }) {
 
   const count = useMemo(() => items.reduce((s, x) => s + x.quantity, 0), [items]);
   const subtotal = useMemo(
-    () => items.reduce((s, x) => s + Number(x.product.base_price) * x.quantity, 0), [items]);
+    () => items.reduce((s, x) => s + Number(x.product.price ?? x.product.base_price) * x.quantity, 0), [items]);
 
   return (
     <CartCtx.Provider value={{ items, open, setOpen, add, setQty, remove, clear, count, subtotal }}>

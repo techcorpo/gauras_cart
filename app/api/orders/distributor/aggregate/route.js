@@ -12,7 +12,7 @@ export async function POST(req) {
       return NextResponse.json({ error: 'manufacturer_id and order_item_ids are required' }, { status: 400 });
     await client.query('BEGIN');
     const sel = await client.query(`SELECT oi.id,oi.product_id,oi.quantity,oi.unit_price,o.buyer_user_id,o.id AS farmer_order_id,
-      p.manufacturer_id,p.base_price FROM order_items oi JOIN orders o ON o.id=oi.order_id JOIN products p ON p.id=oi.product_id
+      p.manufacturer_id,p.base_price,p.min_order_qty,p.name AS product_name FROM order_items oi JOIN orders o ON o.id=oi.order_id JOIN products p ON p.id=oi.product_id
       WHERE oi.id = ANY($1) AND o.seller_id=$2 AND oi.aggregated_into IS NULL`, [order_item_ids, orgId]);
     if (sel.rowCount===0) throw new Error('No valid, un-aggregated items selected');
     if (sel.rows.find(r=>r.manufacturer_id!==manufacturer_id)) throw new Error('All items must belong to the chosen manufacturer');
@@ -24,6 +24,8 @@ export async function POST(req) {
     let total=0;
     for (const k of Object.keys(byProduct)) {
       const g=byProduct[k];
+      const minq=Number(g.rows[0].min_order_qty||0);
+      if (minq>0 && g.qty<minq) throw new Error(`Manufacturer minimum is ${minq} for ${g.rows[0].product_name} (selected total ${g.qty})`);
       const li = await client.query(`INSERT INTO order_items (order_id,product_id,quantity,unit_price) VALUES ($1,$2,$3,$4) RETURNING id`, [poId, g.product_id, g.qty, g.base_price]);
       const poItemId = li.rows[0].id; total += g.base_price*g.qty;
       for (const fr of g.rows) {
