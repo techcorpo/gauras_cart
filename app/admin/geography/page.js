@@ -72,13 +72,15 @@ export default function AdminGeography() {
       </div>
 
       <div className="flex flex-wrap gap-3 mb-4">
-        <select className="input w-auto" value={stateId} onChange={e => { setStateId(e.target.value); setDistrictId(''); }}>
-          <option value="">{t('All States')}</option>
-          {states.map(s => <option key={s.id} value={String(s.id)}>{s.name}</option>)}
-        </select>
         {tab !== 'states' && (
+          <select className="input w-auto" value={stateId} onChange={e => { setStateId(e.target.value); setDistrictId(''); }}>
+            <option value="">{t('All States')}</option>
+            {states.map(s => <option key={s.id} value={String(s.id)}>{s.name}</option>)}
+          </select>
+        )}
+        {tab === 'blocks' && (
           <select className="input w-auto" value={districtId} onChange={e => setDistrictId(e.target.value)}>
-            <option value="">{tab === 'blocks' ? t('All Districts') : t('Filter by State')}</option>
+            <option value="">{t('All Districts')}</option>
             {filteredDistricts.map(d => <option key={d.id} value={String(d.id)}>{d.name}</option>)}
           </select>
         )}
