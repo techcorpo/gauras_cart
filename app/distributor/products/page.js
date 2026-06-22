@@ -3,9 +3,11 @@ import { useEffect, useState, useMemo } from 'react';
 import FodderShell from '../../../components/FodderShell';
 import { useToast } from '../../../components/Toast';
 import { Products } from '../../../lib/api';
+import { useUI } from '../../../components/Providers';
 
 export default function DistributorProducts() {
   const toast = useToast();
+  const { t } = useUI();
   const [all, setAll] = useState([]);
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('');
@@ -33,19 +35,19 @@ export default function DistributorProducts() {
   return (
     <FodderShell role="distributor" title="Available Products" description="From your partner manufacturers, with your price.">
       <div className="flex flex-wrap gap-3 mb-4">
-        <input className="input flex-1 min-w-[200px]" placeholder="Search e.g. wheat, gehu, urea" value={q} onChange={e=>setQ(e.target.value)} />
-        <select className="input w-auto" value={cat} onChange={e=>setCat(e.target.value)}><option value="">All categories</option>{cats.map(c=><option key={c}>{c}</option>)}</select>
+        <input className="input flex-1 min-w-[200px]" placeholder={t('Search e.g. wheat, gehu, urea')} value={q} onChange={e=>setQ(e.target.value)} />
+        <select className="input w-auto" value={cat} onChange={e=>setCat(e.target.value)}><option value="">{t('All categories')}</option>{cats.map(c=><option key={c}>{c}</option>)}</select>
         <select className="input w-auto" value={groupBy} onChange={e=>setGroupBy(e.target.value)}>
-          <option value="manufacturer">Group by Manufacturer</option><option value="catalog">Group by Product</option><option value="none">No grouping</option>
+          <option value="manufacturer">{t('Group by Manufacturer')}</option><option value="catalog">{t('Group by Product')}</option><option value="none">{t('No grouping')}</option>
         </select>
       </div>
       <div className="card overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-[#fbfdfc] dark:bg-[#101a15] text-slate-500 text-xs uppercase">
-            <tr>{['Product','Manufacturer','Category','Unit','Your Price'].map(h=><th key={h} className="text-left p-3">{h}</th>)}</tr>
+            <tr>{['Product','Manufacturer','Category','Unit','Your Price'].map(h=><th key={h} className="text-left p-3">{t(h)}</th>)}</tr>
           </thead>
           <tbody>
-            {list.length===0 && <tr><td colSpan={5} className="p-8 text-center text-slate-400">No products found.</td></tr>}
+            {list.length===0 && <tr><td colSpan={5} className="p-8 text-center text-slate-400">{t('No products found.')}</td></tr>}
             {groupBy==='none' ? list.map(Row) : Object.keys(groups).sort().map(k=>(
               <>
                 <tr key={'g'+k} className="bg-[#f8fbf9] dark:bg-[#101a15]"><td colSpan={5} className="p-2 px-3 font-extrabold text-brand-deep dark:text-brand-light text-xs">{k} <span className="text-slate-400 font-semibold">({groups[k].length})</span></td></tr>

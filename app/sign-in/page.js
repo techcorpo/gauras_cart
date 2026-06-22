@@ -87,11 +87,11 @@ export default function SignIn() {
           <form onSubmit={submit} className="space-y-4">
             <div>
               <label className="label text-slate-700 dark:text-slate-300">{t('Mobile Number')}</label>
-              <input className="input" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="Enter mobile number" />
+              <input className="input" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder={t('Enter mobile number')} />
             </div>
             <div>
               <label className="label text-slate-700 dark:text-slate-300">{t('Password / PIN')}</label>
-              <input className="input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password or 4-digit PIN" />
+              <input className="input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={t('Password or 4-digit PIN')} />
             </div>
             {err && <p className="text-sm text-rose-600 bg-rose-50 dark:bg-[#2a1717] rounded-lg px-3 py-2">{err}</p>}
             <button className="w-full bg-amber-400 hover:bg-amber-500 disabled:bg-slate-300 text-slate-950 font-black py-3 rounded-xl transition" disabled={busy}>

@@ -6,9 +6,11 @@ import FodderShell from '../../../components/FodderShell';
 import OrderPipeline from '../../../components/OrderPipeline';
 import { Orders } from '../../../lib/api';
 import { useToast } from '../../../components/Toast';
+import { useUI } from '../../../components/Providers';
 
 export default function FarmerDashboard() {
   const toast = useToast();
+  const { t } = useUI();
   const [stats, setStats] = useState(null);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,43 +29,43 @@ export default function FarmerDashboard() {
       {/* Welcome / quick action */}
       <div className="bg-gradient-to-r from-brand to-brand-dark p-6 rounded-3xl text-white flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-black">My Orders &amp; Tracking</h1>
-          <p className="text-sm text-white/85">Track your orders and reorder inputs anytime.</p>
+          <h1 className="text-2xl font-black">{t('My Orders & Tracking')}</h1>
+          <p className="text-sm text-white/85">{t('Track your orders and reorder inputs anytime.')}</p>
         </div>
         <Link href="/farmer/shop" className="bg-amber-400 hover:bg-amber-500 text-slate-950 font-black px-6 py-3 rounded-xl flex items-center gap-2">
-          <ShoppingBag className="w-5 h-5" /> Continue Shopping
+          <ShoppingBag className="w-5 h-5" /> {t('Continue Shopping')}
         </Link>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Stat icon={<Package className="w-5 h-5" />} tone="green" label="Active Orders" value={loading ? '—' : stats?.active_orders ?? 0} />
-        <Stat icon={<Boxes className="w-5 h-5" />} tone="blue" label="Quantity Ordered" value={loading ? '—' : Number(stats?.quantity ?? 0)} />
-        <Stat icon={<Coins className="w-5 h-5" />} tone="amber" label="Amount Due" value={loading ? '—' : `₹${Number(stats?.due ?? 0).toFixed(2)}`} />
-        <Stat icon={<TrendingUp className="w-5 h-5" />} tone="rose" label="Total Orders" value={loading ? '—' : stats?.total_orders ?? 0} />
+        <Stat icon={<Package className="w-5 h-5" />} tone="green" label={t('Active Orders')} value={loading ? '—' : stats?.active_orders ?? 0} />
+        <Stat icon={<Boxes className="w-5 h-5" />} tone="blue" label={t('Quantity Ordered')} value={loading ? '—' : Number(stats?.quantity ?? 0)} />
+        <Stat icon={<Coins className="w-5 h-5" />} tone="amber" label={t('Amount Due')} value={loading ? '—' : `₹${Number(stats?.due ?? 0).toFixed(2)}`} />
+        <Stat icon={<TrendingUp className="w-5 h-5" />} tone="rose" label={t('Total Orders')} value={loading ? '—' : stats?.total_orders ?? 0} />
       </div>
 
       {/* Orders with pipeline */}
       <div className="card">
         <div className="p-4 border-b border-slate-100 dark:border-[#24332b] flex items-center gap-2">
           <Package className="w-5 h-5 text-amber-500" />
-          <h2 className="font-bold">My Shipments</h2>
+          <h2 className="font-bold">{t('My Shipments')}</h2>
         </div>
         <div className="p-4 space-y-4">
           {loading ? (
-            <div className="text-center py-10 text-slate-400">Loading…</div>
+            <div className="text-center py-10 text-slate-400">{t('Loading…')}</div>
           ) : orders.length === 0 ? (
             <div className="text-center py-12 text-slate-400 space-y-3">
               <ShoppingBag className="w-12 h-12 mx-auto text-slate-200" />
-              <p>No orders yet.</p>
-              <Link href="/farmer/shop" className="btn btn-primary inline-flex">Start Shopping</Link>
+              <p>{t('No orders yet.')}</p>
+              <Link href="/farmer/shop" className="btn btn-primary inline-flex">{t('Start Shopping')}</Link>
             </div>
           ) : (
             orders.map(o => (
               <div key={o.id} className="bg-slate-50 dark:bg-[#101a15] p-4 rounded-2xl border border-slate-200 dark:border-[#24332b] space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div>
-                    <span className="font-bold">Order #{o.order_number}</span>
+                    <span className="font-bold">{t('Order')} #{o.order_number}</span>
                     <span className="mx-2 text-slate-300">|</span>
                     <span className="text-slate-500">{new Date(o.created_at).toLocaleDateString()}</span>
                     <span className="mx-2 text-slate-300">|</span>

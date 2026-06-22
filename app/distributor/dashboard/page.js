@@ -7,10 +7,10 @@ export default function DistributorDashboard() {
   return (
     <FodderShell role="distributor" title="Distributor Dashboard" description="Aggregate farmer demand and order from manufacturers.">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Metric label="Farmer Orders" value="—" tone="green" />
-        <Metric label="Receivables" value="—" tone="blue" />
-        <Metric label="Purchase Orders" value="—" tone="amber" />
-        <Metric label="Payable" value="—" tone="rose" />
+        <Metric label={t('Farmer Orders')} value="—" tone="green" />
+        <Metric label={t('Receivables')} value="—" tone="blue" />
+        <Metric label={t('Purchase Orders')} value="—" tone="amber" />
+        <Metric label={t('Payable')} value="—" tone="rose" />
       </div>
     </FodderShell>
   );

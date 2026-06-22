@@ -3,10 +3,12 @@ import { useEffect, useState } from 'react';
 import FodderShell from '../../../components/FodderShell';
 import { useToast } from '../../../components/Toast';
 import { Manufacturer, Geo } from '../../../lib/api';
+import { useUI } from '../../../components/Providers';
 
 const SEASONS = ['kharif','rabi','zaid','annual'];
 export default function ManufacturerSettings() {
   const toast = useToast();
+  const { t } = useUI();
   const year = new Date().getFullYear();
   const [cap, setCap] = useState({ kharif:0, rabi:0, zaid:0, annual:0 });
   const [districts, setDistricts] = useState([]);
@@ -38,30 +40,30 @@ export default function ManufacturerSettings() {
     <FodderShell role="manufacturer" title="Settings" description="Society, production capacity and delivery territory.">
 
       <div className="card p-6 mb-6">
-        <h2 className="font-bold mb-1">Society</h2>
-        <p className="text-sm text-slate-500 mb-4">Your society code and whether only its distributors may sell your products.</p>
+        <h2 className="font-bold mb-1">{t('Society')}</h2>
+        <p className="text-sm text-slate-500 mb-4">{t('Your society code and whether only its distributors may sell your products.')}</p>
         <div className="grid md:grid-cols-2 gap-4 items-end">
           <div>
-            <div className="label">Society Code</div>
+            <div className="label">{t('Society Code')}</div>
             <input className="input" maxLength={10} value={societyCode}
               onChange={e=>setSocietyCode(e.target.value.toUpperCase().slice(0,10))}
               placeholder="e.g. SANCHI" />
-            <p className="text-xs text-slate-400 mt-1">Up to 10 characters. Leave blank if not part of a society.</p>
+            <p className="text-xs text-slate-400 mt-1">{t('Up to 10 characters. Leave blank if not part of a society.')}</p>
           </div>
           <div>
             <label className="flex items-center gap-2 text-sm font-medium">
               <input type="checkbox" checked={isExclusive} onChange={e=>setIsExclusive(e.target.checked)} />
-              Exclusive (only this society's distributors can sell my products)
+              {t("Exclusive (only this society's distributors can sell my products)")}
             </label>
           </div>
         </div>
         <div className="mt-4 text-right">
-          <button className="btn btn-primary" onClick={async()=>{ try{ await Manufacturer.saveSociety(societyCode, isExclusive); toast('Society saved'); }catch(e){toast(e.message);} }}>Save Society</button>
+          <button className="btn btn-primary" onClick={async()=>{ try{ await Manufacturer.saveSociety(societyCode, isExclusive); toast(t('Society saved')); }catch(e){toast(e.message);} }}>{t('Save Society')}</button>
         </div>
       </div>
 
       <div className="card p-6 mb-6">
-        <h2 className="font-bold mb-4">Production Capacity ({year}) — tonnes</h2>
+        <h2 className="font-bold mb-4">{t('Production Capacity')} ({year}) — {t('tonnes')}</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {SEASONS.map(s => (
             <div key={s}>
@@ -72,12 +74,12 @@ export default function ManufacturerSettings() {
           ))}
         </div>
         <div className="mt-4 text-right">
-          <button className="btn btn-primary" onClick={async()=>{ try{ await Manufacturer.saveCapacity(year, cap); toast('Capacity saved'); }catch(e){toast(e.message);} }}>Save Capacity</button>
+          <button className="btn btn-primary" onClick={async()=>{ try{ await Manufacturer.saveCapacity(year, cap); toast(t('Capacity saved')); }catch(e){toast(e.message);} }}>{t('Save Capacity')}</button>
         </div>
       </div>
 
       <div className="card p-6">
-        <h2 className="font-bold mb-4">Delivery Territory</h2>
+        <h2 className="font-bold mb-4">{t('Delivery Territory')}</h2>
         <div className="space-y-3 max-h-80 overflow-y-auto">
           {districts.map(g => (
             <div key={g.d.id}>
@@ -93,7 +95,7 @@ export default function ManufacturerSettings() {
           ))}
         </div>
         <div className="mt-4 text-right">
-          <button className="btn btn-primary" onClick={async()=>{ try{ await Manufacturer.saveBlocks(Array.from(sel)); toast('Territory saved'); }catch(e){toast(e.message);} }}>Save Territory</button>
+          <button className="btn btn-primary" onClick={async()=>{ try{ await Manufacturer.saveBlocks(Array.from(sel)); toast(t('Territory saved')); }catch(e){toast(e.message);} }}>{t('Save Territory')}</button>
         </div>
       </div>
     </FodderShell>
