@@ -88,7 +88,7 @@ export default function FodderShell({ role, search, onSearch, category, onCatego
               )}
               <input value={search} onChange={(e)=>onSearch(e.target.value)}
                 placeholder="Search products…"
-                className="flex-1 px-4 py-2 text-slate-900 outline-none text-sm" />
+                className="flex-1 px-4 py-2 bg-slate-900 text-white placeholder:text-white/70 outline-none text-sm" />
               <button className="bg-amber-400 hover:bg-amber-500 text-slate-950 px-5 grid place-items-center"><Search className="w-5 h-5" /></button>
             </div>
           ) : <div className="flex-1 hidden md:block" />}
