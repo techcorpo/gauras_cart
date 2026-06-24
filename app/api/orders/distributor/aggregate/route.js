@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getClient } from '../../../../../lib/db';
 import { requireRole } from '../../../../../lib/auth';
 import { getOrgId } from '../../../../../lib/orgs';
+import { distributorScope } from '../../../../../lib/exclusivity';
 export async function POST(req) {
   const client = await getClient();
   try {
@@ -10,6 +11,15 @@ export async function POST(req) {
     const { manufacturer_id, season, notes, order_item_ids } = await req.json();
     if (!manufacturer_id || !Array.isArray(order_item_ids) || order_item_ids.length===0)
       return NextResponse.json({ error: 'manufacturer_id and order_item_ids are required' }, { status: 400 });
+
+    const scope = await distributorScope(orgId);
+    if (scope.exclusive) {
+      const mfr = await client.query('SELECT society_code FROM organizations WHERE id=$1 AND type=$2', [manufacturer_id, 'manufacturer']);
+      if (mfr.rowCount === 0 || mfr.rows[0].society_code !== scope.society_code) {
+        return NextResponse.json({ error: 'Society exclusivity: you can only partner with manufacturers in your society' }, { status: 403 });
+      }
+    }
+
     await client.query('BEGIN');
     const sel = await client.query(`SELECT oi.id,oi.product_id,oi.quantity,oi.unit_price,o.buyer_user_id,o.id AS farmer_order_id,
       p.manufacturer_id,p.base_price,p.min_order_qty,p.name AS product_name FROM order_items oi JOIN orders o ON o.id=oi.order_id JOIN products p ON p.id=oi.product_id

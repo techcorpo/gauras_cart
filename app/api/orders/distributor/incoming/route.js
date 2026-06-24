@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { query } from '../../../../../lib/db';
 import { requireRole } from '../../../../../lib/auth';
 import { getOrgId } from '../../../../../lib/orgs';
+import { exclusivityWhereSQL } from '../../../../../lib/exclusivity';
 export async function GET(req) {
   try {
     const u = requireRole(req, 'distributor');
@@ -13,7 +14,9 @@ export async function GET(req) {
       FROM orders o JOIN order_items oi ON oi.order_id=o.id
       JOIN users u ON u.id=o.buyer_user_id LEFT JOIN blocks b ON b.id=o.block_id
       JOIN products p ON p.id=oi.product_id JOIN organizations mo ON mo.id=p.manufacturer_id
-      WHERE o.seller_id=$1 ORDER BY o.created_at DESC`, [orgId]);
+      JOIN organizations dist ON dist.id=$1
+      WHERE o.seller_id=$1 AND ${exclusivityWhereSQL('dist', 'mo')}
+      ORDER BY o.created_at DESC`, [orgId]);
     return NextResponse.json({ items: r.rows });
   } catch (e) { return NextResponse.json({ error: e.error||'Failed' }, { status: e.status||500 }); }
 }

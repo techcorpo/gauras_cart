@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import FodderShell from '../../../components/FodderShell';
 import { useToast } from '../../../components/Toast';
+import PaymentModal from '../../../components/PaymentModal';
 import { Orders } from '../../../lib/api';
 import { useUI } from '../../../components/Providers';
 
@@ -14,6 +15,8 @@ export default function DistributorOrders() {
   const [items, setItems] = useState([]);
   const [pos, setPos] = useState([]);
   const [sel, setSel] = useState(new Set());
+  const [pay, setPay] = useState(null);
+  const [editQty, setEditQty] = useState(null);
 
   async function loadIncoming(){ try{ setItems((await Orders.incoming()).items); setSel(new Set()); }catch(e){toast(e.message);} }
   async function loadPos(){ try{ setPos((await Orders.distributorPos()).pos); }catch(e){toast(e.message);} }
@@ -29,7 +32,8 @@ export default function DistributorOrders() {
     const mfr=[...mfrs][0]; const ids=[...sel];
     try{ const r=await Orders.aggregate({ manufacturer_id:mfr, order_item_ids:ids }); toast(t('PO')+' #'+r.order_number+' '+t('created')); loadIncoming(); }catch(e){toast(e.message);}
   }
-  async function markPaid(orderId){ try{ await Orders.setPayment(orderId,'paid'); toast(t('Marked paid')); loadIncoming(); }catch(e){toast(e.message);} }
+  async function markPaid(details){ try{ await Orders.setPayment(pay,'paid',details); toast(t('Marked paid')); setPay(null); loadIncoming(); }catch(e){toast(e.message);} }
+  async function saveQty(it){ const qty = Number(editQty?.quantity); if(!qty||qty<=0) return; try{ await Orders.updateItemQty(it.order_id, it.order_item_id, qty); toast(t('Saved')); setEditQty(null); loadIncoming(); }catch(e){toast(e.message);} }
 
   return (
     <FodderShell role="distributor" title="Orders" description="Aggregate farmer demand into purchase orders.">
@@ -52,9 +56,19 @@ export default function DistributorOrders() {
                   <td className="p-3">{it.aggregated_into ? <span className="pill bg-[#e5f5eb] text-brand">{t('in PO')}</span> : <input type="checkbox" checked={sel.has(it.order_item_id)} onChange={()=>toggle(it)} />}</td>
                   <td className="p-3">{it.farmer_name}</td><td className="p-3">{it.block_name||'-'}</td>
                   <td className="p-3 font-semibold">{it.product_name}</td><td className="p-3">{it.manufacturer_name}</td>
-                  <td className="p-3">{Number(it.quantity)} {it.unit}</td>
+                  <td className="p-3">
+                    {editQty?.order_item_id === it.order_item_id ? (
+                      <div className="flex items-center gap-1">
+                        <input type="number" className="input h-8 w-24 px-2" value={editQty.quantity} onChange={e=>setEditQty({...editQty, quantity: e.target.value})} />
+                        <button className="btn btn-primary h-7 px-2 text-xs" onClick={()=>saveQty(it)}>{t('Save')}</button>
+                        <button className="btn btn-secondary h-7 px-2 text-xs" onClick={()=>setEditQty(null)}>{t('Cancel')}</button>
+                      </div>
+                    ) : (
+                      <span>{Number(it.quantity)} {it.unit} {!it.aggregated_into && <button className="ml-2 text-brand text-xs underline" onClick={()=>setEditQty({order_item_id: it.order_item_id, quantity: it.quantity})}>{t('Edit')}</button>}</span>
+                    )}
+                  </td>
                   <td className="p-3">{it.aggregated_into?<span className="pill bg-[#e5f5eb] text-brand">{t('aggregated')}</span>:<span className="pill bg-[#fff4dc] text-[#9a6a12]">{t('pending')}</span>}</td>
-                  <td className="p-3">{it.order_payment==='paid'?<span className="pill bg-[#e5f5eb] text-brand">{t('paid')}</span>:<><span className="pill bg-[#fff4dc] text-[#9a6a12] mr-2">{t('pending')}</span><button className="btn btn-secondary h-7 px-2 text-xs" onClick={()=>markPaid(it.order_id)}>{t('Mark Paid')}</button></>}</td>
+                  <td className="p-3">{it.order_payment==='paid'?<span className="pill bg-[#e5f5eb] text-brand">{t('paid')}</span>:<><span className="pill bg-[#fff4dc] text-[#9a6a12] mr-2">{t('pending')}</span><button className="btn btn-secondary h-7 px-2 text-xs" onClick={()=>setPay(it.order_id)}>{t('Mark Paid')}</button></>}</td>
                 </tr>
               ))}
             </tbody>
@@ -88,6 +102,7 @@ export default function DistributorOrders() {
           </table>
         </div>
       )}
+    {pay && <PaymentModal order={pay} onClose={()=>setPay(null)} onSubmit={markPaid} />}
     </FodderShell>
   );
 }

@@ -21,7 +21,7 @@ export async function GET(req) {
        ORDER BY o.created_at DESC`, [orgId]);
     const ids = pos.rows.map(p=>p.id); let byOrder={};
     if (ids.length) {
-      const items = await query(`SELECT oi.order_id,oi.quantity,oi.unit_price,oi.line_total,p.name AS product_name,p.unit
+      const items = await query(`SELECT oi.id, oi.order_id,oi.quantity,oi.unit_price,oi.line_total,p.name AS product_name,p.unit
         FROM order_items oi JOIN products p ON p.id=oi.product_id WHERE oi.order_id = ANY($1)`, [ids]);
       items.rows.forEach(r=>{(byOrder[r.order_id]=byOrder[r.order_id]||[]).push(r);});
     }
