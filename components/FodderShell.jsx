@@ -18,6 +18,14 @@ export default function FodderShell({ role, search, onSearch, category, onCatego
   const cart = useCart();
   const [user, setUser] = useState(null);
   const [checking, setChecking] = useState(true);
+  const [pulse, setPulse] = useState(false);
+
+  useEffect(() => {
+    if (cart.count === 0) return;
+    setPulse(true);
+    const id = setTimeout(() => setPulse(false), 500);
+    return () => clearTimeout(id);
+  }, [cart.count]);
 
   useEffect(() => {
     (async () => {
@@ -99,7 +107,7 @@ export default function FodderShell({ role, search, onSearch, category, onCatego
             {user.role === 'farmer' && (
               <button onClick={()=>cart.setOpen(true)} className="relative p-2 bg-slate-800 hover:bg-slate-700 rounded-lg">
                 <ShoppingCart className="w-5 h-5 text-amber-400" />
-                {cart.count > 0 && <span className="absolute -top-1.5 -right-1.5 bg-amber-500 text-slate-950 font-black text-[10px] w-5 h-5 rounded-full grid place-items-center">{cart.count}</span>}
+                {cart.count > 0 && <span className={`absolute -top-1.5 -right-1.5 bg-amber-500 text-slate-950 font-black text-[10px] w-5 h-5 rounded-full grid place-items-center ${pulse ? 'badge-pulse' : ''}`}>{cart.count}</span>}
               </button>
             )}
           </div>

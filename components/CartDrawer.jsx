@@ -1,15 +1,17 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShoppingCart, X, ShoppingBag, Truck, Minus, Plus } from 'lucide-react';
+import { ShoppingCart, X, ShoppingBag, Truck, Minus, Plus, ArrowLeft } from 'lucide-react';
 import { useCart } from './CartProvider';
 import { useToast } from './Toast';
+import { useUI } from './Providers';
 import { Orders } from '../lib/api';
 import { productEmoji, productGradient } from '../lib/placeholder';
 
 export default function CartDrawer() {
   const cart = useCart();
   const toast = useToast();
+  const { t } = useUI();
   const router = useRouter();
   const [season, setSeason] = useState('');
   const [busy, setBusy] = useState(false);
@@ -47,7 +49,7 @@ export default function CartDrawer() {
       <div className="bg-white dark:bg-[#15201b] w-full max-w-md h-full flex flex-col shadow-2xl animate-slideLeft" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
-          <div className="flex items-center gap-2"><ShoppingCart className="w-5 h-5 text-amber-400" /><h3 className="font-bold">Shopping Cart</h3></div>
+          <div className="flex items-center gap-2"><ShoppingCart className="w-5 h-5 text-amber-400" /><h3 className="font-bold">{t('Shopping Cart')}</h3></div>
           <button onClick={() => cart.setOpen(false)} className="p-1 text-slate-300 hover:text-white"><X className="w-6 h-6" /></button>
         </div>
 
@@ -56,8 +58,8 @@ export default function CartDrawer() {
           {cart.items.length === 0 ? (
             <div className="text-center py-20 space-y-3 text-slate-400">
               <ShoppingBag className="w-16 h-16 mx-auto text-slate-200" />
-              <p className="font-semibold">Your cart is empty</p>
-              <button onClick={() => cart.setOpen(false)} className="btn btn-primary">Start Shopping</button>
+              <p className="font-semibold">{t('Your cart is empty')}</p>
+              <button onClick={() => { cart.setOpen(false); router.push('/farmer/shop'); }} className="btn btn-primary">{t('Start Shopping')}</button>
             </div>
           ) : (
             Object.entries(groups).map(([did, g]) => (
@@ -111,9 +113,12 @@ export default function CartDrawer() {
                 {['kharif','rabi','zaid','annual'].map(s => <option key={s} value={s} className="capitalize">{s}</option>)}
               </select>
             </div>
+            <button onClick={() => { cart.setOpen(false); router.push('/farmer/shop'); }} className="w-full btn btn-secondary py-3 flex items-center justify-center gap-2">
+              <ArrowLeft className="w-4 h-4" /> {t('Continue Shopping')}
+            </button>
             <button onClick={checkout} disabled={busy}
               className="w-full bg-amber-400 hover:bg-amber-500 disabled:bg-slate-300 text-slate-950 font-black py-3 rounded-xl flex items-center justify-center gap-2">
-              <ShoppingCart className="w-5 h-5" /> {busy ? 'Placing…' : 'Place Order'}
+              <ShoppingCart className="w-5 h-5" /> {busy ? t('Placing…') : t('Place Order')}
             </button>
           </div>
         )}

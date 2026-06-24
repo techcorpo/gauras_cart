@@ -19,7 +19,6 @@ export function CartProvider({ children }) {
       }
       return [...prev, { product, quantity: qty }];
     });
-    setOpen(true);
   }, []);
 
   const setQty = useCallback((productId, qty) => {
