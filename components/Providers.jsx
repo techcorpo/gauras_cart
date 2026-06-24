@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from 'rea
 import { translate, LANG_NAMES } from '../lib/i18n';
 import { ToastProvider } from './Toast';
 import { CartProvider } from './CartProvider';
+import { PWAProvider } from './PWAContext';
 import { resolveTheme, applyColor, DEFAULT_COLOR } from '../lib/colors';
 
 const UIContext = createContext(null);
@@ -45,7 +46,7 @@ export function Providers({ children }) {
 
   return (
     <UIContext.Provider value={{ theme, toggleTheme, lang, changeLang, t, LANG_NAMES, colorPref, setColor }}>
-      <ToastProvider><CartProvider>{children}</CartProvider></ToastProvider>
+      <ToastProvider><CartProvider><PWAProvider>{children}</PWAProvider></CartProvider></ToastProvider>
     </UIContext.Provider>
   );
 }

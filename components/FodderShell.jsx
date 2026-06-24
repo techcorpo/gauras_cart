@@ -6,6 +6,7 @@ import { Sprout, Search, ShoppingCart, User, LogOut, Sparkles } from 'lucide-rea
 import { Auth, Session } from '../lib/api';
 import { useUI } from './Providers';
 import { useCart } from './CartProvider';
+import { usePWA } from './PWAContext';
 import Topbar from './Topbar';
 import CartDrawer from './CartDrawer';
 
@@ -16,6 +17,7 @@ export default function FodderShell({ role, search, onSearch, category, onCatego
   const pathname = usePathname();
   const { t } = useUI();
   const cart = useCart();
+  const pwa = usePWA();
   const [user, setUser] = useState(null);
   const [checking, setChecking] = useState(true);
   const [pulse, setPulse] = useState(false);
@@ -56,10 +58,13 @@ export default function FodderShell({ role, search, onSearch, category, onCatego
   return (
     <div className="min-h-screen flex flex-col bg-slate-100 dark:bg-[#0e1512]">
       {/* PWA strip */}
-      <div className="bg-amber-400 text-slate-950 text-xs py-1.5 px-4 font-semibold text-center flex items-center justify-center gap-2">
-        <Sparkles className="w-3.5 h-3.5 shrink-0" />
-        <span className="truncate">Gauras Mart — add to Home Screen for fast ordering &amp; offline access 📲</span>
-      </div>
+      {(pwa.show || pwa.iosHint) && (
+        <button onClick={pwa.show ? pwa.install : () => {}}
+          className="w-full bg-amber-400 text-slate-950 text-xs py-1.5 px-4 font-semibold text-center flex items-center justify-center gap-2 hover:bg-amber-300 transition">
+          <Sparkles className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">Gauras Mart — add to Home Screen for fast ordering &amp; offline access 📲</span>
+        </button>
+      )}
 
       {/* Main dark header */}
       <header className="bg-slate-900 text-white sticky top-0 z-40 shadow-md">
