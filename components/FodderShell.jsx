@@ -50,7 +50,7 @@ export default function FodderShell({ role, search, onSearch, category, onCatego
     farmer: [['Shop','/farmer/shop'],['My Orders','/farmer/dashboard'],['Settings','/farmer/settings']],
     manufacturer: [['Dashboard','/manufacturer/dashboard'],['Products','/manufacturer/products'],['Orders','/manufacturer/orders'],['Consignments','/manufacturer/consignments'],['Settings','/manufacturer/settings']],
     distributor: [['Dashboard','/distributor/dashboard'],['Products','/distributor/products'],['Orders','/distributor/orders'],['Consignments','/distributor/consignments'],['Settings','/distributor/settings']],
-    admin: [['Dashboard','/admin/dashboard'],['Manufacturers','/admin/manufacturers'],['Distributors','/admin/distributors'],['Farmers','/admin/farmers'],['Catalog','/admin/catalog'],['Earnings','/admin/earnings'],['Geography','/admin/geography']],
+    admin: [['Dashboard','/admin/dashboard'],['Manufacturers','/admin/manufacturers'],['Distributors','/admin/distributors'],['Farmers','/admin/farmers'],['Catalog','/admin/catalog'],['Earnings','/admin/earnings'],['Geography','/admin/geography'],['Retest','/admin/retest']],
   }[user.role] || [];
 
   return (
